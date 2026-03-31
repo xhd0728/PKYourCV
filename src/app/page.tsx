@@ -60,7 +60,7 @@ export default function Home() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/duel"
-              className="display-type rounded-full border-3 border-[var(--border)] bg-[var(--ink)] px-6 py-4 text-xl uppercase tracking-[0.14em] text-white shadow-[7px_7px_0_var(--border)]"
+              className="display-type inline-flex items-center justify-center rounded-full border-3 border-[var(--border)] bg-[var(--acid)] px-6 py-4 text-xl uppercase tracking-[0.14em] text-[var(--ink)] shadow-[7px_7px_0_var(--border)] transition hover:-translate-y-1 hover:bg-[var(--hot)] hover:text-[var(--paper)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[var(--hot)]"
             >
               去打擂台
             </Link>
