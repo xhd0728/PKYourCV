@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 
 import { AnalysisCard } from "@/components/analysis-card";
-import { withBasePath } from "@/lib/base-path";
 import type { DuelResult, SourceType } from "@/lib/types";
 
 type ContenderState = {
@@ -136,7 +135,7 @@ export function DuelArena() {
           formData.append("right_pdf", right.pdf);
         }
 
-        const response = await fetch(withBasePath("/api/duel"), {
+        const response = await fetch("/api/duel", {
           method: "POST",
           body: formData,
         });

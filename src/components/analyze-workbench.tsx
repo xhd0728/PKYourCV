@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 
 import { AnalysisCard } from "@/components/analysis-card";
-import { withBasePath } from "@/lib/base-path";
 import type { LeaderboardEntry, SourceType } from "@/lib/types";
 
 const inputClass =
@@ -43,7 +42,7 @@ export function AnalyzeWorkbench() {
           formData.append("pdf", pdf);
         }
 
-        const response = await fetch(withBasePath("/api/analyze"), {
+        const response = await fetch("/api/analyze", {
           method: "POST",
           body: formData,
         });

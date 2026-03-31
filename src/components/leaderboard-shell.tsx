@@ -2,7 +2,6 @@
 
 import { useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
 
-import { withBasePath } from "@/lib/base-path";
 import type { BoardType, LeaderboardEntry, LeaderboardResponse, SourceType } from "@/lib/types";
 
 function sourceLabel(value: SourceType) {
@@ -103,7 +102,7 @@ export function LeaderboardShell({ initialData }: { initialData: LeaderboardResp
       page: String(nextPage),
       page_size: String(data.page_size),
     });
-    const response = await fetch(withBasePath(`/api/leaderboard?${params.toString()}`), {
+    const response = await fetch(`/api/leaderboard?${params.toString()}`, {
       cache: "no-store",
     });
     const payload = (await response.json()) as LeaderboardResponse | { error: string };

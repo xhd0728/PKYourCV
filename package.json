@@ -2,8 +2,10 @@
   "name": "pkyourcv",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.12.1",
   "scripts": {
     "dev": "next dev",
+    "dev:server": "next dev -H 0.0.0.0 -p 52006",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
