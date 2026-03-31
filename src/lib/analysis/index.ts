@@ -19,6 +19,18 @@ import type {
 } from "@/lib/types";
 import { average, clampScore, normalizeWhitespace, sanitizeNickname, truncate } from "@/lib/utils";
 
+const CHRONOLOGY_ATTACK_PATTERN =
+  /(20\d{2}|时间|年份|日期|月份|更新日期|last\s*updated|未来|穿越|平行宇宙|预支未来|来自未来)/i;
+
+const CHRONOLOGY_ATTACK_MESSAGE =
+  "不要拿时间、年份、日期、未来、穿越、平行宇宙、更新日期这些话题开火。请只围绕职业信号、成果归因、叙事主线和证据密度阴阳怪气。";
+
+function validateNoChronologyAttacks(parts: string[]): string | null {
+  return parts.some((part) => CHRONOLOGY_ATTACK_PATTERN.test(part))
+    ? CHRONOLOGY_ATTACK_MESSAGE
+    : null;
+}
+
 export function normalizeScoreBreakdown(breakdown: ScoreBreakdown): ScoreBreakdown {
   return {
     clarity: clampScore(breakdown.clarity),
@@ -77,6 +89,8 @@ export async function runCandidateAnalysis(input: {
     messages: buildAnalysisMessages(input),
     responder: input.responder,
     repair_hint: analysisDraftShape,
+    response_validator: (value) =>
+      validateNoChronologyAttacks([value.summary, value.fatal_flaw, ...value.fixes]),
     temperature: 0.2,
     max_tokens: 800,
     retries: 1,
@@ -104,6 +118,8 @@ export async function runCandidateAnalysis(input: {
     }),
     responder: input.responder,
     repair_hint: roastShape,
+    response_validator: (value) =>
+      validateNoChronologyAttacks([value.roast_copy, value.share_line]),
     temperature: 0.7,
     max_tokens: 700,
     retries: 1,
@@ -139,6 +155,8 @@ export async function runDuel(input: {
     }),
     responder: input.responder,
     repair_hint: duelCopyShape,
+    response_validator: (value) =>
+      validateNoChronologyAttacks([value.commentary, value.decision_summary]),
     temperature: 0.8,
     max_tokens: 800,
     retries: 1,

@@ -9,7 +9,7 @@ datasource db {
 
 model LeaderboardEntry {
   id                 Int        @id @default(autoincrement())
-  nickname           String
+  nickname           String     @unique
   sourceType         SourceType
   sourceHash         String
   hireabilityScore   Int
