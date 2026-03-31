@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model LeaderboardEntry {
+  id                 Int        @id @default(autoincrement())
+  nickname           String
+  sourceType         SourceType
+  sourceHash         String
+  hireabilityScore   Int
+  chaosScore         Int
+  summary            String
+  fatalFlaw          String
+  roastCopy          String
+  shareLine          String
+  fixesJson          String
+  scoreBreakdownJson String
+  createdAt          DateTime   @default(now())
+
+  @@index([hireabilityScore(sort: Desc), chaosScore, createdAt(sort: Desc)])
+  @@index([chaosScore(sort: Desc), hireabilityScore, createdAt(sort: Desc)])
+  @@index([sourceType, createdAt(sort: Desc)])
+}
+
+enum SourceType {
+  URL
+  PDF
+}

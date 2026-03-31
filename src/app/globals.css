@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --page-bg: #f5ead9;
+  --paper: #fff8ef;
+  --ink: #151515;
+  --border: #131313;
+  --muted: #5e564b;
+  --acid: #f7ff57;
+  --hot: #ff5b49;
+  --sky: #82dbff;
+  --leaf: #84e68f;
+  --peach: #ffb08f;
+}
+
+@theme inline {
+  --color-background: var(--page-bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--page-bg);
+}
+
+body {
+  position: relative;
+  background:
+    radial-gradient(circle at top left, rgba(255, 91, 73, 0.18), transparent 26%),
+    radial-gradient(circle at top right, rgba(130, 219, 255, 0.28), transparent 24%),
+    radial-gradient(circle at bottom center, rgba(247, 255, 87, 0.24), transparent 28%),
+    linear-gradient(180deg, #fff7ef 0%, #f5ead9 100%);
+  color: var(--ink);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(19, 19, 19, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 19, 19, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 85%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--acid);
+  color: var(--ink);
+}
+
+.panel {
+  border: 3px solid var(--border);
+  border-radius: 2rem;
+  background: color-mix(in srgb, white 84%, transparent);
+  box-shadow: 10px 10px 0 rgba(19, 19, 19, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.display-type {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+}
+
+.body-type {
+  font-family: var(--font-body), sans-serif;
+}
