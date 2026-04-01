@@ -58,8 +58,25 @@ export async function saveLeaderboardEntry(input: {
 }): Promise<LeaderboardEntry> {
   await ensureDatabaseSchema();
 
-  const row = await prisma.leaderboardEntry.create({
-    data: {
+  const createdAt = new Date();
+  const row = await prisma.leaderboardEntry.upsert({
+    where: {
+      nickname: input.analysis.nickname,
+    },
+    update: {
+      sourceType: SOURCE_MAP[input.analysis.source_type],
+      sourceHash: input.source_hash,
+      hireabilityScore: input.analysis.hireability_score,
+      chaosScore: input.analysis.chaos_score,
+      summary: input.analysis.summary,
+      fatalFlaw: input.analysis.fatal_flaw,
+      roastCopy: input.analysis.roast_copy,
+      shareLine: input.analysis.share_line,
+      fixesJson: JSON.stringify(input.analysis.fixes),
+      scoreBreakdownJson: JSON.stringify(input.analysis.score_breakdown),
+      createdAt,
+    },
+    create: {
       nickname: input.analysis.nickname,
       sourceType: SOURCE_MAP[input.analysis.source_type],
       sourceHash: input.source_hash,
@@ -71,6 +88,7 @@ export async function saveLeaderboardEntry(input: {
       shareLine: input.analysis.share_line,
       fixesJson: JSON.stringify(input.analysis.fixes),
       scoreBreakdownJson: JSON.stringify(input.analysis.score_breakdown),
+      createdAt,
     },
   });
 

@@ -75,6 +75,7 @@ function ContenderPanel({
 
         {state.mode === "url" ? (
           <input
+            key={`${title}-url`}
             className={inputClass}
             inputMode="url"
             placeholder="https://portfolio.example"
@@ -83,6 +84,7 @@ function ContenderPanel({
           />
         ) : (
           <input
+            key={`${title}-pdf`}
             className={`${inputClass} file:mr-4 file:rounded-full file:border-0 file:bg-[var(--ink)] file:px-4 file:py-2 file:font-black file:text-white`}
             type="file"
             accept="application/pdf,.pdf"

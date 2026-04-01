@@ -131,11 +131,12 @@ export function AnalyzeWorkbench() {
             </label>
 
             {mode === "url" ? (
-              <label className="grid gap-2">
+              <label key="url-input" className="grid gap-2">
                 <span className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">
                   主页网址
                 </span>
                 <input
+                  key="url"
                   className={inputClass}
                   inputMode="url"
                   placeholder="https://your-portfolio.dev"
@@ -144,11 +145,12 @@ export function AnalyzeWorkbench() {
                 />
               </label>
             ) : (
-              <label className="grid gap-2">
+              <label key="pdf-input" className="grid gap-2">
                 <span className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">
                   PDF 文件
                 </span>
                 <input
+                  key="pdf"
                   className={`${inputClass} file:mr-4 file:rounded-full file:border-0 file:bg-[var(--ink)] file:px-4 file:py-2 file:font-black file:text-white`}
                   type="file"
                   accept="application/pdf,.pdf"

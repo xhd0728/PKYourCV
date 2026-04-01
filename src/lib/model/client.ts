@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+import type { ChatCompletionCreateParamsNonStreaming } from "openai/resources/chat";
 import type { z } from "zod";
 
 import { getModelConfig } from "@/lib/env";
@@ -14,6 +16,7 @@ export type ChatResponder = (input: {
   messages: ChatMessage[];
   temperature?: number;
   max_tokens?: number;
+  response_format?: ChatCompletionCreateParamsNonStreaming["response_format"];
 }) => Promise<string>;
 
 const globalForOpenAI = globalThis as typeof globalThis & {
@@ -61,8 +64,17 @@ function readMessageText(content: unknown): string {
   return "";
 }
 
+function buildStructuredResponseFormatName(schemaLabel: string): string {
+  const normalized = schemaLabel
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return normalized || "structured_output";
+}
+
 export function createOpenAIResponder(): ChatResponder {
-  return async ({ messages, temperature = 0.4, max_tokens = 900 }) => {
+  return async ({ messages, temperature = 0.4, max_tokens = 900, response_format }) => {
     const config = getModelConfig();
     const client = getOpenAIClient();
     const response = await client.chat.completions.create({
@@ -70,6 +82,7 @@ export function createOpenAIResponder(): ChatResponder {
       messages,
       temperature,
       max_tokens,
+      response_format,
     });
 
     const content = readMessageText(response.choices[0]?.message?.content);
@@ -86,8 +99,9 @@ export async function requestStructuredCompletion<T>({
   schema,
   schema_label,
   messages,
-  responder = createOpenAIResponder(),
+  responder,
   repair_hint,
+  response_validator,
   temperature = 0.3,
   max_tokens = 900,
   retries = 1,
@@ -97,12 +111,20 @@ export async function requestStructuredCompletion<T>({
   messages: ChatMessage[];
   responder?: ChatResponder;
   repair_hint?: string;
+  response_validator?: (value: T) => string | null;
   temperature?: number;
   max_tokens?: number;
   retries?: number;
 }): Promise<T> {
+  const activeResponder = responder ?? createOpenAIResponder();
+  const responseFormat = zodResponseFormat(
+    schema,
+    buildStructuredResponseFormatName(schema_label),
+  );
   let attempt = 0;
   let repairTarget = "";
+  let repairMessage = `你上一条回复不是合法 ${schema_label} JSON。请只输出合法 JSON，不要解释，不要 Markdown。
+${repair_hint ? `必须严格使用这个 JSON 结构：\n${repair_hint}` : ""}`;
 
   while (attempt <= retries) {
     const requestMessages =
@@ -113,21 +135,33 @@ export async function requestStructuredCompletion<T>({
             { role: "assistant" as const, content: repairTarget },
             {
               role: "user" as const,
-              content: `你上一条回复不是合法 ${schema_label} JSON。请只输出合法 JSON，不要解释，不要 Markdown。
-${repair_hint ? `必须严格使用这个 JSON 结构：\n${repair_hint}` : ""}`,
+              content: repairMessage,
             },
           ];
 
-    const rawText = await responder({
+    const rawText = await activeResponder({
       messages: requestMessages,
       temperature,
       max_tokens,
+      response_format: responseFormat,
     });
 
     try {
-      return parseModelJson(rawText, schema);
+      const parsed = parseModelJson(rawText, schema);
+      const validationMessage = response_validator?.(parsed);
+
+      if (!validationMessage) {
+        return parsed;
+      }
+
+      repairTarget = rawText;
+      repairMessage = `你上一条回复虽然是合法 JSON，但违反了输出约束：${validationMessage}
+请重写，仍然只输出合法 JSON，不要解释，不要 Markdown。
+${repair_hint ? `必须严格使用这个 JSON 结构：\n${repair_hint}` : ""}`;
     } catch (error) {
       repairTarget = rawText;
+      repairMessage = `你上一条回复不是合法 ${schema_label} JSON。请只输出合法 JSON，不要解释，不要 Markdown。
+${repair_hint ? `必须严格使用这个 JSON 结构：\n${repair_hint}` : ""}`;
 
       if (attempt === retries) {
         throw new AppError(
@@ -135,6 +169,13 @@ ${repair_hint ? `必须严格使用这个 JSON 结构：\n${repair_hint}` : ""}`
           502,
         );
       }
+
+      attempt += 1;
+      continue;
+    }
+
+    if (attempt === retries) {
+      throw new AppError(`模型没有返回符合约束的 ${schema_label} JSON。`, 502);
     }
 
     attempt += 1;

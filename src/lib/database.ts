@@ -16,6 +16,16 @@ const bootstrapStatements = [
     "scoreBreakdownJson" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`,
+  `DELETE FROM "LeaderboardEntry" AS "stale"
+    WHERE "stale"."id" <> (
+      SELECT "fresh"."id"
+      FROM "LeaderboardEntry" AS "fresh"
+      WHERE "fresh"."nickname" = "stale"."nickname"
+      ORDER BY "fresh"."createdAt" DESC, "fresh"."id" DESC
+      LIMIT 1
+    )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "LeaderboardEntry_nickname_key"
+    ON "LeaderboardEntry"("nickname")`,
   `CREATE INDEX IF NOT EXISTS "LeaderboardEntry_hireabilityScore_chaosScore_createdAt_idx"
     ON "LeaderboardEntry"("hireabilityScore" DESC, "chaosScore", "createdAt" DESC)`,
   `CREATE INDEX IF NOT EXISTS "LeaderboardEntry_chaosScore_hireabilityScore_createdAt_idx"

@@ -28,6 +28,8 @@ const mockEntry: LeaderboardEntry = {
 };
 
 describe("AnalyzeWorkbench", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
     vi.stubGlobal("navigator", {
@@ -35,10 +37,12 @@ describe("AnalyzeWorkbench", () => {
         writeText: vi.fn(),
       },
     });
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    consoleErrorSpy.mockRestore();
   });
 
   it("submits a URL and renders the returned verdict", async () => {
@@ -90,5 +94,17 @@ describe("AnalyzeWorkbench", () => {
     const body = requestInit?.body as FormData;
 
     expect(body.get("pdf")).toBe(file);
+  });
+
+  it("does not emit a controlled input warning when switching between URL and PDF modes", () => {
+    render(<AnalyzeWorkbench />);
+
+    fireEvent.click(screen.getByRole("button", { name: "PDF 简历" }));
+    fireEvent.click(screen.getByRole("button", { name: "主页 URL" }));
+    fireEvent.click(screen.getByRole("button", { name: "PDF 简历" }));
+
+    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("A component is changing a controlled input to be uncontrolled"),
+    );
   });
 });
